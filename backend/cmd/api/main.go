@@ -33,13 +33,10 @@ func main() {
 	// Initialize repositories
 	boardRepo := repository.NewBoardRepository(db)
 	taskRepo := repository.NewTaskRepository(db)
-	plotAIRepo := repository.NewPlotAIRepository(db)
 
 	// Initialize services
 	boardService := service.NewBoardService(boardRepo)
 	taskService := service.NewTaskService(taskRepo)
-	geminiService := service.NewGeminiService()
-	plotAIService := service.NewPlotAIService(plotAIRepo, geminiService)
 	
 	// Set board repository in task service
 	if taskSvc, ok := taskService.(interface{ SetBoardRepo(repository.BoardRepository) }); ok {
@@ -58,7 +55,6 @@ func main() {
 	// Initialize handlers
 	boardHandler := handler.NewBoardHandler(boardService)
 	taskHandler := handler.NewTaskHandler(taskService)
-	plotAIHandler := handler.NewPlotAIHandler(plotAIService)
 	wsHandler := handler.NewWebSocketHandler(hub)
 
 	// Setup router
@@ -138,14 +134,6 @@ func main() {
 
 		// WebSocket route
 		api.GET("/ws", wsHandler.HandleWebSocket)
-
-		// Plot AI routes (require authentication)
-		plotAI := api.Group("/plot-ai")
-		plotAI.Use(middleware.AuthMiddleware(cfg.JWTSecret))
-		{
-			plotAI.POST("/chat", plotAIHandler.SendMessage)
-			plotAI.GET("/history", plotAIHandler.GetHistory)
-		}
 	}
 
 	// Start server

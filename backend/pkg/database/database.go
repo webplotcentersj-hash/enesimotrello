@@ -24,8 +24,6 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		&domain.User{},
 		&domain.Board{},
 		&domain.Task{},
-		&domain.PlotAIChatMessage{},
-		&domain.PlotAIConfig{},
 	)
 	if err != nil {
 		return nil, err
