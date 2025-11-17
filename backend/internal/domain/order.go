@@ -29,7 +29,7 @@ type Order struct {
 	Sectores       []OrderSector    `json:"sectores,omitempty" gorm:"foreignKey:IDOrden"`
 	Archivos       []Attachment     `json:"archivos,omitempty" gorm:"foreignKey:IDOrden"`
 	Historial      []MovementHistory `json:"historial,omitempty" gorm:"foreignKey:IDOrden"`
-	Tareas         []Task           `json:"tareas,omitempty" gorm:"foreignKey:IDOrden"`
+	Tareas         []OrderTask      `json:"tareas,omitempty" gorm:"foreignKey:IDOrden"`
 	Comentarios    []OrderComment   `json:"comentarios,omitempty" gorm:"foreignKey:IDOrden"`
 	Enlaces        []OrderLink      `json:"enlaces,omitempty" gorm:"foreignKey:IDOrden"`
 
@@ -115,8 +115,8 @@ func (MovementHistory) TableName() string {
 	return "historial_movimientos"
 }
 
-// Task represents a task within an order
-type Task struct {
+// OrderTask represents a task within an order
+type OrderTask struct {
 	ID              uint   `json:"id" gorm:"primaryKey"`
 	IDOrden         uint   `json:"id_orden" gorm:"column:id_orden;not null;index"`
 	DescripcionTarea string `json:"descripcion_tarea" gorm:"type:varchar(255);not null"`
@@ -126,8 +126,8 @@ type Task struct {
 	Orden Order `json:"orden,omitempty" gorm:"foreignKey:IDOrden"`
 }
 
-// TableName specifies the table name for Task
-func (Task) TableName() string {
+// TableName specifies the table name for OrderTask
+func (OrderTask) TableName() string {
 	return "tareas"
 }
 
