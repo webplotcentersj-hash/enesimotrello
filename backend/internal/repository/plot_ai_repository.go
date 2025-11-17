@@ -7,8 +7,8 @@ import (
 )
 
 type PlotAIRepository interface {
-	CreateMessage(message *domain.ChatMessage) error
-	GetUserMessages(userID uint, limit int) ([]domain.ChatMessage, error)
+	CreateMessage(message *domain.PlotAIChatMessage) error
+	GetUserMessages(userID uint, limit int) ([]domain.PlotAIChatMessage, error)
 	GetConfig(key string) (*domain.PlotAIConfig, error)
 	SetConfig(key, value string) error
 }
@@ -21,12 +21,12 @@ func NewPlotAIRepository(db *gorm.DB) PlotAIRepository {
 	return &plotAIRepository{db: db}
 }
 
-func (r *plotAIRepository) CreateMessage(message *domain.ChatMessage) error {
+func (r *plotAIRepository) CreateMessage(message *domain.PlotAIChatMessage) error {
 	return r.db.Create(message).Error
 }
 
-func (r *plotAIRepository) GetUserMessages(userID uint, limit int) ([]domain.ChatMessage, error) {
-	var messages []domain.ChatMessage
+func (r *plotAIRepository) GetUserMessages(userID uint, limit int) ([]domain.PlotAIChatMessage, error) {
+	var messages []domain.PlotAIChatMessage
 	query := r.db.Where("user_id = ?", userID).Order("created_at DESC")
 	
 	if limit > 0 {

@@ -1,13 +1,14 @@
 package service
 
 import (
+	"time"
 	"task-board/internal/domain"
 	"task-board/internal/repository"
 )
 
 type PlotAIService interface {
-	SendMessage(userID uint, message string) (*domain.ChatResponse, error)
-	GetHistory(userID uint, limit int) ([]domain.ChatMessage, error)
+	SendMessage(userID uint, message string) (*domain.SendMessageResponse, error)
+	GetHistory(userID uint, limit int) ([]domain.PlotAIChatMessage, error)
 }
 
 type plotAIService struct {
@@ -22,7 +23,7 @@ func NewPlotAIService(repo repository.PlotAIRepository, geminiService *GeminiSer
 	}
 }
 
-func (s *plotAIService) SendMessage(userID uint, message string) (*domain.ChatResponse, error) {
+func (s *plotAIService) SendMessage(userID uint, message string) (*domain.SendMessageResponse, error) {
 	// Get conversation history
 	history, err := s.repo.GetUserMessages(userID, 20)
 	if err != nil {
@@ -46,10 +47,11 @@ func (s *plotAIService) SendMessage(userID uint, message string) (*domain.ChatRe
 	}
 
 	// Save user message
-	userMsg := &domain.ChatMessage{
-		UserID:  userID,
-		Role:    "user",
-		Content: message,
+	userMsg := &domain.PlotAIChatMessage{
+		UserID:    userID,
+		Role:      "user",
+		Content:   message,
+		Timestamp: time.Now(),
 	}
 	if err := s.repo.CreateMessage(userMsg); err != nil {
 		return nil, err
@@ -62,10 +64,11 @@ func (s *plotAIService) SendMessage(userID uint, message string) (*domain.ChatRe
 	}
 
 	// Save assistant message
-	assistantMsg := &domain.ChatMessage{
-		UserID:  userID,
-		Role:    "assistant",
-		Content: response,
+	assistantMsg := &domain.PlotAIChatMessage{
+		UserID:    userID,
+		Role:      "model",
+		Content:   response,
+		Timestamp: time.Now(),
 	}
 	if err := s.repo.CreateMessage(assistantMsg); err != nil {
 		return nil, err
@@ -77,13 +80,14 @@ func (s *plotAIService) SendMessage(userID uint, message string) (*domain.ChatRe
 		return nil, err
 	}
 
-	return &domain.ChatResponse{
-		Message: response,
-		History: updatedHistory,
+	return &domain.SendMessageResponse{
+		Reply:     response,
+		History:   updatedHistory,
+		Timestamp: time.Now(),
 	}, nil
 }
 
-func (s *plotAIService) GetHistory(userID uint, limit int) ([]domain.ChatMessage, error) {
+func (s *plotAIService) GetHistory(userID uint, limit int) ([]domain.PlotAIChatMessage, error) {
 	return s.repo.GetUserMessages(userID, limit)
 }
 
