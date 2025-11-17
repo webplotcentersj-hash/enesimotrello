@@ -1,0 +1,83 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: taskboard-postgres
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.postgres
+    envVars:
+      - key: POSTGRES_USER
+        value: taskboard
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_DB
+        value: taskboard
+
+  # Redis
+  - type: redis
+    name: taskboard-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+
+  # Backend API
+  - type: web
+    name: taskboard-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_HOST
+        fromDatabase:
+          name: taskboard-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: taskboard-postgres
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: taskboard-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: taskboard-postgres
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: taskboard-postgres
+          property: database
+      - key: REDIS_HOST
+        fromService:
+          name: taskboard-redis
+          type: redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          name: taskboard-redis
+          type: redis
+          property: port
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 24h
+      - key: CORS_ORIGIN
+        value: "*"
+    healthCheckPath: /api/v1/health
+
+  # Frontend
+  - type: web
+    name: taskboard-frontend
+    env: docker
+    dockerfilePath: ./frontend/Dockerfile.prod
+    dockerContext: ./frontend
+    plan: free
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          name: taskboard-backend
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+

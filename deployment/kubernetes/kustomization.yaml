@@ -1,0 +1,21 @@
+# Kustomization file for kubectl apply -k
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: taskboard
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - postgres-pvc.yaml
+  - redis-pvc.yaml
+  - postgres-deployment.yaml
+  - redis-deployment.yaml
+  - backend-deployment.yaml
+  - frontend-deployment.yaml
+  - ingress.yaml
+
+# commonLabels:
+#   app: taskboard
+#   managed-by: kustomize
+
